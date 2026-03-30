@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>МійДім — ОСББ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Geologica:wght@300;400;500;700;900&family=Inter:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar" id="navbar">
+  <div class="nav-container">
+    <a href="index.html" class="nav-logo">
+      <span class="logo-icon">🏠</span>
+      <span class="logo-text">МійДім</span>
+    </a>
+    <button class="burger" id="burger" aria-label="Меню">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html" class="active">Головна</a></li>
+      <li><a href="news.html">Новини</a></li>
+      <li><a href="residents.html">Мешканці</a></li>
+      <li><a href="payments.html">Оплата</a></li>
+      <li><a href="requests.html">Заявки</a></li>
+      <li><a href="login.html" class="btn-nav">Увійти</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-content">
+    <div class="hero-badge">ОСББ — Цифрове управління</div>
+    <h1>Ваш будинок<br/><span class="gradient-text">під контролем</span></h1>
+    <p class="hero-sub">Прозоре управління, зручна оплата, швидкі заявки — все в одному місці для вашого ОСББ</p>
+    <div class="hero-btns">
+      <a href="register.html" class="btn-primary">Зареєструватись</a>
+      <a href="#features" class="btn-ghost">Дізнатись більше</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-n">240</span><span class="stat-l">Мешканців</span></div>
+      <div class="stat-div"></div>
+      <div class="stat"><span class="stat-n">12</span><span class="stat-l">Поверхів</span></div>
+      <div class="stat-div"></div>
+      <div class="stat"><span class="stat-n">98%</span><span class="stat-l">Оплат вчасно</span></div>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="card-float card1">
+      <div class="cf-icon">💧</div>
+      <div>
+        <div class="cf-title">Вода</div>
+        <div class="cf-val">₴ 312.00</div>
+      </div>
+    </div>
+    <div class="card-float card2">
+      <div class="cf-icon">⚡</div>
+      <div>
+        <div class="cf-title">Електрика</div>
+        <div class="cf-val">₴ 580.50</div>
+      </div>
+    </div>
+    <div class="card-float card3">
+      <div class="cf-icon">✅</div>
+      <div>
+        <div class="cf-title">Заявку прийнято</div>
+        <div class="cf-val">кв. 47 • ліфт</div>
+      </div>
+    </div>
+    <div class="phone-mock">
+      <div class="pm-header">МійДім</div>
+      <div class="pm-row">
+        <span>Комунальні</span><span class="pm-green">Сплачено ✓</span>
+      </div>
+      <div class="pm-row">
+        <span>Нова заявка</span><span class="pm-orange">В роботі</span>
+      </div>
+      <div class="pm-row">
+        <span>Збори ОСББ</span><span class="pm-blue">15 квіт.</span>
+      </div>
+      <div class="pm-bar">
+        <div class="pm-bar-fill"></div>
+      </div>
+      <div class="pm-label">Бюджет: 78% використано</div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="container">
+    <div class="section-head">
+      <div class="section-badge">Можливості</div>
+      <h2>Все що потрібно ОСББ</h2>
+      <p>Простий та зручний інструмент для управителів і мешканців</p>
+    </div>
+    <div class="features-grid">
+      <div class="feat-card">
+        <div class="feat-icon" style="background: linear-gradient(135deg,#6366f1,#8b5cf6)">📢</div>
+        <h3>Новини та оголошення</h3>
+        <p>Важливі повідомлення від управителя одразу отримують всі мешканці</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon" style="background: linear-gradient(135deg,#0ea5e9,#6366f1)">💳</div>
+        <h3>Оплата онлайн</h3>
+        <p>Зручна оплата комунальних послуг та внесків прямо з додатку</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon" style="background: linear-gradient(135deg,#10b981,#0ea5e9)">🔧</div>
+        <h3>Заявки на ремонт</h3>
+        <p>Подайте заявку онлайн та відстежуйте статус виконання роботи</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon" style="background: linear-gradient(135deg,#f59e0b,#ef4444)">👥</div>
+        <h3>База мешканців</h3>
+        <p>Структурована база квартир та мешканців з пошуком і фільтрацією</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon" style="background: linear-gradient(135deg,#ec4899,#f59e0b)">📊</div>
+        <h3>Фінансові звіти</h3>
+        <p>Прозорий звіт про витрати та надходження бюджету ОСББ</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon" style="background: linear-gradient(135deg,#8b5cf6,#ec4899)">🗳️</div>
+        <h3>Голосування</h3>
+        <p>Приймайте рішення разом — зручні онлайн-опитування та збори</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-bg"></div>
+  <div class="container cta-inner">
+    <h2>Готові почати?</h2>
+    <p>Зареєструйтесь як мешканець або управитель вже сьогодні</p>
+    <a href="register.html" class="btn-primary btn-lg">Розпочати безкоштовно</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container footer-inner">
+    <div class="footer-logo">
+      <span class="logo-icon">🏠</span> МійДім ОСББ
+    </div>
+    <div class="footer-links">
+      <a href="#">Про нас</a>
+      <a href="#">Контакти</a>
+      <a href="#">Конфіденційність</a>
+    </div>
+    <div class="footer-copy">© 2025 МійДім. Всі права захищені.</div>
+  </div>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

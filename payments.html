@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Оплата — МійДім</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Geologica:wght@300;400;500;700;900&family=Inter:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body class="dashboard-page">
+<nav class="navbar" id="navbar">
+  <div class="nav-container">
+    <a href="index.html" class="nav-logo"><span class="logo-icon">🏠</span><span class="logo-text">МійДім</span></a>
+    <button class="burger" id="burger"><span></span><span></span><span></span></button>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="dashboard.html">Кабінет</a></li>
+      <li><a href="news.html">Новини</a></li>
+      <li><a href="residents.html">Мешканці</a></li>
+      <li><a href="payments.html" class="active">Оплата</a></li>
+      <li><a href="requests.html">Заявки</a></li>
+      <li><a href="#" onclick="logout()" class="btn-nav btn-logout">Вийти</a></li>
+    </ul>
+  </div>
+</nav>
+<div class="dashboard-layout">
+  <aside class="sidebar">
+    <div class="sidebar-user">
+      <div class="user-avatar">І</div>
+      <div class="user-info">
+        <div class="user-name" id="dash-name">Іваненко І.І.</div>
+        <div class="user-apt" id="dash-apt">кв. 42</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html" class="snav">📊 Огляд</a>
+      <a href="payments.html" class="snav active">💳 Оплата</a>
+      <a href="requests.html" class="snav">🔧 Заявки</a>
+      <a href="news.html" class="snav">📢 Новини</a>
+      <a href="residents.html" class="snav">👥 Мешканці</a>
+      <a href="#" class="snav snav-logout" onclick="logout()">🚪 Вийти</a>
+    </nav>
+  </aside>
+  <main class="dash-main">
+    <div class="dash-greeting">
+      <div><h1>💳 Оплата послуг</h1><p>Квітень 2025</p></div>
+    </div>
+
+    <!-- Payment summary -->
+    <div class="pay-summary-card">
+      <div class="pay-sum-left">
+        <div class="pay-label">До сплати цього місяця</div>
+        <div class="pay-amount">₴ 846.00</div>
+        <div class="pay-due">Термін: до 20 квітня 2025</div>
+      </div>
+      <button class="btn-primary btn-pay" onclick="showPayModal()">Сплатити зараз</button>
+    </div>
+
+    <!-- Services breakdown -->
+    <div class="dash-block">
+      <div class="block-head"><h3>Деталізація нарахувань</h3></div>
+      <div class="pay-services">
+        <div class="pay-svc">
+          <div class="pay-svc-info">
+            <span class="pay-svc-icon">💧</span>
+            <div>
+              <div class="pay-svc-name">Холодна вода</div>
+              <div class="pay-svc-detail">4.2 м³ × ₴ 30.12</div>
+            </div>
+          </div>
+          <div class="pay-svc-right">
+            <div class="pay-svc-sum">₴ 126.50</div>
+            <span class="badge-paid">Сплачено</span>
+          </div>
+        </div>
+        <div class="pay-svc">
+          <div class="pay-svc-info">
+            <span class="pay-svc-icon">🔥</span>
+            <div>
+              <div class="pay-svc-name">Гаряча вода</div>
+              <div class="pay-svc-detail">2.8 м³ × ₴ 95.40</div>
+            </div>
+          </div>
+          <div class="pay-svc-right">
+            <div class="pay-svc-sum">₴ 267.12</div>
+            <span class="badge-pending">Очікує</span>
+          </div>
+        </div>
+        <div class="pay-svc">
+          <div class="pay-svc-info">
+            <span class="pay-svc-icon">⚡</span>
+            <div>
+              <div class="pay-svc-name">Електрика</div>
+              <div class="pay-svc-detail">134 кВт × ₴ 4.32</div>
+            </div>
+          </div>
+          <div class="pay-svc-right">
+            <div class="pay-svc-sum">₴ 578.88</div>
+            <span class="badge-pending">Очікує</span>
+          </div>
+        </div>
+        <div class="pay-svc">
+          <div class="pay-svc-info">
+            <span class="pay-svc-icon">🏠</span>
+            <div>
+              <div class="pay-svc-name">Утримання будинку</div>
+              <div class="pay-svc-detail">62 м² × ₴ 15.00</div>
+            </div>
+          </div>
+          <div class="pay-svc-right">
+            <div class="pay-svc-sum">₴ 275.00</div>
+            <span class="badge-paid">Сплачено</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- History -->
+    <div class="dash-block">
+      <div class="block-head"><h3>Історія оплат</h3></div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Місяць</th><th>Сума</th><th>Дата оплати</th><th>Статус</th></tr></thead>
+          <tbody>
+            <tr><td>Березень 2025</td><td>₴ 1 120.00</td><td>18.03.2025</td><td><span class="badge-paid">Сплачено</span></td></tr>
+            <tr><td>Лютий 2025</td><td>₴ 980.50</td><td>15.02.2025</td><td><span class="badge-paid">Сплачено</span></td></tr>
+            <tr><td>Січень 2025</td><td>₴ 1 045.00</td><td>19.01.2025</td><td><span class="badge-paid">Сплачено</span></td></tr>
+            <tr><td>Грудень 2024</td><td>₴ 1 230.00</td><td>20.12.2024</td><td><span class="badge-paid">Сплачено</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Pay Modal -->
+<div class="modal-overlay hidden" id="pay-modal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>Підтвердження оплати</h3>
+      <button class="modal-close" onclick="closeModal('pay-modal')">✕</button>
+    </div>
+    <div class="pay-confirm-info">
+      <div class="pc-row"><span>Сума до сплати</span><strong>₴ 846.00</strong></div>
+      <div class="pc-row"><span>Квартира</span><strong id="pay-apt-info">кв. 42</strong></div>
+      <div class="pc-row"><span>Місяць</span><strong>Квітень 2025</strong></div>
+    </div>
+    <div class="form-group">
+      <label>Спосіб оплати</label>
+      <select>
+        <option>💳 Банківська карта</option>
+        <option>📱 Apple Pay / Google Pay</option>
+        <option>🏦 Онлайн-банкінг</option>
+      </select>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-ghost" onclick="closeModal('pay-modal')">Скасувати</button>
+      <button class="btn-primary" onclick="confirmPayment()">Підтвердити оплату ₴ 846.00</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

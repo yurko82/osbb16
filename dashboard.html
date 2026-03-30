@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Кабінет — МійДім</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Geologica:wght@300;400;500;700;900&family=Inter:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body class="dashboard-page">
+
+<nav class="navbar" id="navbar">
+  <div class="nav-container">
+    <a href="index.html" class="nav-logo">
+      <span class="logo-icon">🏠</span>
+      <span class="logo-text">МійДім</span>
+    </a>
+    <button class="burger" id="burger"><span></span><span></span><span></span></button>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="dashboard.html" class="active">Кабінет</a></li>
+      <li><a href="news.html">Новини</a></li>
+      <li><a href="residents.html">Мешканці</a></li>
+      <li><a href="payments.html">Оплата</a></li>
+      <li><a href="requests.html">Заявки</a></li>
+      <li><a href="#" onclick="logout()" class="btn-nav btn-logout">Вийти</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="dashboard-layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-user">
+      <div class="user-avatar" id="dash-avatar">І</div>
+      <div class="user-info">
+        <div class="user-name" id="dash-name">Іваненко І.І.</div>
+        <div class="user-apt" id="dash-apt">кв. 42 • 5 поверх</div>
+        <div class="user-role" id="dash-role">Мешканець</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html" class="snav active">📊 Огляд</a>
+      <a href="payments.html" class="snav">💳 Оплата</a>
+      <a href="requests.html" class="snav">🔧 Заявки</a>
+      <a href="news.html" class="snav">📢 Новини</a>
+      <a href="residents.html" class="snav">👥 Мешканці</a>
+      <a href="#" class="snav snav-logout" onclick="logout()">🚪 Вийти</a>
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <main class="dash-main">
+    <div class="dash-greeting">
+      <div>
+        <h1>Добрий день, <span id="dash-firstname">Іване</span>! 👋</h1>
+        <p class="dash-date" id="dash-date"></p>
+      </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="kpi-grid">
+      <div class="kpi-card kpi-blue">
+        <div class="kpi-icon">💳</div>
+        <div class="kpi-info">
+          <div class="kpi-label">До сплати</div>
+          <div class="kpi-val">₴ 1 247.50</div>
+        </div>
+        <div class="kpi-badge kpi-warn">Очікує</div>
+      </div>
+      <div class="kpi-card kpi-green">
+        <div class="kpi-icon">✅</div>
+        <div class="kpi-info">
+          <div class="kpi-label">Сплачено (квітень)</div>
+          <div class="kpi-val">₴ 980.00</div>
+        </div>
+        <div class="kpi-badge kpi-ok">Сплачено</div>
+      </div>
+      <div class="kpi-card kpi-purple">
+        <div class="kpi-icon">🔧</div>
+        <div class="kpi-info">
+          <div class="kpi-label">Активні заявки</div>
+          <div class="kpi-val">2</div>
+        </div>
+        <div class="kpi-badge kpi-info">В роботі</div>
+      </div>
+      <div class="kpi-card kpi-orange">
+        <div class="kpi-icon">📢</div>
+        <div class="kpi-info">
+          <div class="kpi-label">Нові оголошення</div>
+          <div class="kpi-val">3</div>
+        </div>
+        <div class="kpi-badge kpi-warn">Нові</div>
+      </div>
+    </div>
+
+    <!-- News + Requests -->
+    <div class="dash-grid2">
+      <div class="dash-block">
+        <div class="block-head">
+          <h3>📢 Останні новини</h3>
+          <a href="news.html" class="see-all">Всі →</a>
+        </div>
+        <div class="news-list">
+          <div class="news-item">
+            <div class="news-dot news-red"></div>
+            <div>
+              <div class="news-title">Планові роботи з водопостачання</div>
+              <div class="news-date">14 квітня 2025</div>
+            </div>
+          </div>
+          <div class="news-item">
+            <div class="news-dot news-blue"></div>
+            <div>
+              <div class="news-title">Збори ОСББ — 20 квітня о 18:00</div>
+              <div class="news-date">12 квітня 2025</div>
+            </div>
+          </div>
+          <div class="news-item">
+            <div class="news-dot news-green"></div>
+            <div>
+              <div class="news-title">Відремонтовано ліфт №2</div>
+              <div class="news-date">10 квітня 2025</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dash-block">
+        <div class="block-head">
+          <h3>🔧 Мої заявки</h3>
+          <a href="requests.html" class="see-all">Всі →</a>
+        </div>
+        <div class="req-list" id="dash-req-list">
+          <div class="req-item">
+            <div class="req-icon">🪟</div>
+            <div class="req-info">
+              <div class="req-title">Протікає вікно</div>
+              <div class="req-date">08 квітня 2025</div>
+            </div>
+            <span class="req-status status-progress">В роботі</span>
+          </div>
+          <div class="req-item">
+            <div class="req-icon">💡</div>
+            <div class="req-info">
+              <div class="req-title">Не горить лампочка в під'їзді</div>
+              <div class="req-date">05 квітня 2025</div>
+            </div>
+            <span class="req-status status-done">Виконано</span>
+          </div>
+        </div>
+        <button class="btn-outline btn-full" onclick="window.location='requests.html'">+ Нова заявка</button>
+      </div>
+    </div>
+
+    <!-- Payments table -->
+    <div class="dash-block">
+      <div class="block-head">
+        <h3>💳 Нарахування за квітень 2025</h3>
+        <a href="payments.html" class="see-all">Деталі →</a>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr><th>Послуга</th><th>Тариф</th><th>Об'єм</th><th>Сума</th><th>Статус</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>💧 Холодна вода</td><td>₴ 30.12/м³</td><td>4.2 м³</td>
+              <td>₴ 126.50</td><td><span class="badge-paid">Сплачено</span></td>
+            </tr>
+            <tr>
+              <td>🔥 Гаряча вода</td><td>₴ 95.40/м³</td><td>2.8 м³</td>
+              <td>₴ 267.12</td><td><span class="badge-pending">Очікує</span></td>
+            </tr>
+            <tr>
+              <td>⚡ Електрика</td><td>₴ 4.32/кВт</td><td>134 кВт</td>
+              <td>₴ 578.88</td><td><span class="badge-pending">Очікує</span></td>
+            </tr>
+            <tr>
+              <td>🏠 Утримання будинку</td><td>₴ 15.00/м²</td><td>62 м²</td>
+              <td>₴ 275.00</td><td><span class="badge-paid">Сплачено</span></td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr><td colspan="3"><strong>Разом до сплати</strong></td>
+            <td><strong>₴ 846.00</strong></td><td></td></tr>
+          </tfoot>
+        </table>
+      </div>
+      <button class="btn-primary" onclick="window.location='payments.html'">Сплатити ₴ 846.00</button>
+    </div>
+  </main>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

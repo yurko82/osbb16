@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Вхід — МійДім</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Geologica:wght@300;400;500;700;900&family=Inter:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body class="auth-page">
+<nav class="navbar" id="navbar">
+  <div class="nav-container">
+    <a href="index.html" class="nav-logo">
+      <span class="logo-icon">🏠</span>
+      <span class="logo-text">МійДім</span>
+    </a>
+  </div>
+</nav>
+<div class="auth-wrap">
+  <div class="auth-left">
+    <div class="auth-left-content">
+      <h2>З поверненням до<br/><span class="gradient-text">МійДім ОСББ</span></h2>
+      <p>Ваш будинок чекає на вас</p>
+    </div>
+  </div>
+  <div class="auth-right">
+    <div class="auth-card">
+      <div class="auth-tabs">
+        <button class="auth-tab" onclick="window.location='register.html'">Реєстрація</button>
+        <button class="auth-tab active">Вхід</button>
+      </div>
+      <div class="auth-form" id="tab-login">
+        <h3>Увійти до системи</h3>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" placeholder="ivan@example.com" id="login-email"/>
+        </div>
+        <div class="form-group">
+          <label>Пароль</label>
+          <div class="input-wrap">
+            <input type="password" placeholder="Ваш пароль" id="login-pass"/>
+            <button class="toggle-pass" onclick="togglePass('login-pass',this)">👁</button>
+          </div>
+        </div>
+        <a href="#" class="forgot-link">Забули пароль?</a>
+        <button class="btn-primary btn-full" onclick="loginUser()">Увійти</button>
+        <div id="login-msg" class="form-msg"></div>
+        <div class="auth-divider"><span>або</span></div>
+        <p class="auth-switch">Немає акаунту? <a href="register.html">Зареєструватись</a></p>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

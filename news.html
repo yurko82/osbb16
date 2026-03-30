@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Новини — МійДім</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Geologica:wght@300;400;500;700;900&family=Inter:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body class="dashboard-page">
+<nav class="navbar" id="navbar">
+  <div class="nav-container">
+    <a href="index.html" class="nav-logo"><span class="logo-icon">🏠</span><span class="logo-text">МійДім</span></a>
+    <button class="burger" id="burger"><span></span><span></span><span></span></button>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="dashboard.html">Кабінет</a></li>
+      <li><a href="news.html" class="active">Новини</a></li>
+      <li><a href="residents.html">Мешканці</a></li>
+      <li><a href="payments.html">Оплата</a></li>
+      <li><a href="requests.html">Заявки</a></li>
+      <li><a href="#" onclick="logout()" class="btn-nav btn-logout">Вийти</a></li>
+    </ul>
+  </div>
+</nav>
+<div class="dashboard-layout">
+  <aside class="sidebar">
+    <div class="sidebar-user">
+      <div class="user-avatar">І</div>
+      <div class="user-info">
+        <div class="user-name" id="dash-name">Іваненко І.І.</div>
+        <div class="user-apt" id="dash-apt">кв. 42</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html" class="snav">📊 Огляд</a>
+      <a href="payments.html" class="snav">💳 Оплата</a>
+      <a href="requests.html" class="snav">🔧 Заявки</a>
+      <a href="news.html" class="snav active">📢 Новини</a>
+      <a href="residents.html" class="snav">👥 Мешканці</a>
+      <a href="#" class="snav snav-logout" onclick="logout()">🚪 Вийти</a>
+    </nav>
+  </aside>
+  <main class="dash-main">
+    <div class="dash-greeting">
+      <div><h1>📢 Новини та оголошення</h1><p>Актуальна інформація від управителя ОСББ</p></div>
+      <div id="admin-add-news" class="hidden">
+        <button class="btn-primary" onclick="openModal('news-modal')">+ Додати новину</button>
+      </div>
+    </div>
+    <div class="news-cards" id="news-cards"></div>
+  </main>
+</div>
+
+<!-- Modal (admin only) -->
+<div class="modal-overlay hidden" id="news-modal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>Нове оголошення</h3>
+      <button class="modal-close" onclick="closeModal('news-modal')">✕</button>
+    </div>
+    <div class="form-group">
+      <label>Заголовок</label>
+      <input type="text" id="news-title-inp" placeholder="Заголовок оголошення"/>
+    </div>
+    <div class="form-group">
+      <label>Тип</label>
+      <select id="news-type">
+        <option value="info">Інформація</option>
+        <option value="warn">Попередження</option>
+        <option value="event">Подія</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Текст</label>
+      <textarea id="news-body" rows="5" placeholder="Текст оголошення..."></textarea>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-ghost" onclick="closeModal('news-modal')">Скасувати</button>
+      <button class="btn-primary" onclick="addNews()">Опублікувати</button>
+    </div>
+  </div>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
