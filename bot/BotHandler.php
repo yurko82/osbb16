@@ -223,6 +223,70 @@ class BotHandler {
         $aptId = (int)($user['apartment_id'] ?? 0);
         $webappUrl = "{$this->webappBaseUrl}?chat_id={$chatId}";
 
+        // 1.5. Перевірка активного стану користувача (покрокові діалоги)
+        $userState = self::getUserState($chatId);
+
+        // Скасування будь-якої активної дії
+        if ($text === '/cancel' || mb_strtolower($text) === 'скасувати') {
+            self::clearUserState($chatId);
+            TelegramService::sendMessage($chatId, "❌ Дію скасовано. Оберіть пункт меню:", Keyboard::mainMenu($webappUrl));
+            return;
+        }
+
+        // Обробка введення тексту нової заявки
+        if ($userState && $userState['state'] === 'waiting_request_text') {
+            $catCode = $userState['data']['category'] ?? 'other';
+            $catTitle = $userState['data']['category_title'] ?? 'Загальне';
+            $cleanText = htmlspecialchars($text);
+            $title = mb_substr($text, 0, 45) . (mb_strlen($text) > 45 ? '...' : '');
+
+            $reqId = RequestModel::create($aptId, (int)$user['id'], $catCode, $title, $text, 'normal');
+            self::clearUserState($chatId);
+
+            $confirm = "✅ <b>Заявку №{$reqId} успішно зареєстровано!</b>\n\n"
+                     . "📁 <b>Категорія:</b> {$catTitle}\n"
+                     . "📝 <b>Опис:</b> {$cleanText}\n\n"
+                     . "🔧 <i>Черговий майстер отримав сповіщення. Стан заявки можна переглядати у меню «🛠 Залишити заявку».</i>";
+            TelegramService::sendMessage($chatId, $confirm, Keyboard::mainMenu($webappUrl));
+
+            // Сповіщаємо чергового майстра та адміністрацію в Telegram
+            try {
+                $stmtM = Database::getConnection()->query("
+                    SELECT telegram_chat_id FROM users 
+                    WHERE role IN ('master', 'admin') AND telegram_chat_id IS NOT NULL AND is_active = 1
+                ");
+                $masters = $stmtM->fetchAll();
+                $notifyMsg = "🔔 <b>Нова заявка на ремонт №{$reqId}!</b>\n\n"
+                           . "🏠 <b>Квартира:</b> №" . ($user['apartment_number'] ?? 'не вказано') . "\n"
+                           . "👤 <b>Заявник:</b> " . htmlspecialchars($user['full_name']) . " (" . htmlspecialchars($user['phone'] ?? '') . ")\n"
+                           . "📁 <b>Категорія:</b> {$catTitle}\n"
+                           . "📝 <b>Опис:</b> {$cleanText}";
+                foreach ($masters as $m) {
+                    if (!empty($m['telegram_chat_id']) && $m['telegram_chat_id'] != $chatId) {
+                        TelegramService::sendMessage($m['telegram_chat_id'], $notifyMsg);
+                    }
+                }
+            } catch (\Throwable $e) {}
+
+            return;
+        }
+
+        // Обробка введення показника лічильника
+        if ($userState && $userState['state'] === 'waiting_meter_reading') {
+            $cleanNum = str_replace(',', '.', trim($text));
+            if (is_numeric($cleanNum)) {
+                $meterId = (int)($userState['data']['meter_id'] ?? 0);
+                $val = (float)$cleanNum;
+
+                Meter::addReading($meterId, $val, (int)$user['id'], 'telegram');
+                self::clearUserState($chatId);
+
+                $reply = "✅ <b>Показник {$val} успішно збережено!</b>\n\nДякуємо за своєчасну передачу!";
+                TelegramService::sendMessage($chatId, $reply, Keyboard::mainMenu($webappUrl));
+                return;
+            }
+        }
+
         // 2. Пункти головного меню
         switch ($text) {
             case '💰 Мій рахунок та QR':
@@ -235,9 +299,12 @@ class BotHandler {
                 $this->sendMetersMenu($chatId, $aptId);
                 break;
 
+            case '🛠 Залишити заявку':
             case '🛠 Мої заявки':
             case '/requests':
-                $this->sendRequestsList($chatId, $aptId);
+            case '/request':
+            case '/new_request':
+                $this->sendRequestsList($chatId, $aptId, $webappUrl);
                 break;
 
             case '📢 Новини будинку':
@@ -251,7 +318,7 @@ class BotHandler {
                     "ℹ️ <b>Команди бота ОСББ:</b>\n\n"
                     . "💰 /balance — перевірити заборгованість та отримати QR для оплати\n"
                     . "🚰 /meters — переглянути та внести показники лічильників\n"
-                    . "🛠 /requests — мої заявки на ремонт\n"
+                    . "🛠 /requests — переглянути та створити заявку на ремонт\n"
                     . "📢 /news — останні оголошення ОСББ\n"
                     . "📱 Відкрити кабінет (WebApp) — повний особистий кабінет прямо в Telegram",
                     Keyboard::mainMenu($webappUrl)
@@ -329,27 +396,29 @@ class BotHandler {
         TelegramService::sendMessage($chatId, $text, Keyboard::metersList($meters));
     }
 
-    private function sendRequestsList(int|string $chatId, int $aptId): void {
+    private function sendRequestsList(int|string $chatId, int $aptId, string $webappUrl = ''): void {
         $requests = RequestModel::getForApartment($aptId);
 
         if (empty($requests)) {
-            TelegramService::sendMessage($chatId, "🛠 <b>У вас немає активних заявок на ремонт.</b>");
-            return;
+            $text = "🛠 <b>У вас наразі немає зареєстрованих заявок.</b>\n\n"
+                  . "Ви можете створити нову заявку на ремонт прямо тут у боті або через кабінет WebApp:";
+        } else {
+            $text = "🛠 <b>Ваші останні заявки на ремонт:</b>\n\n";
+            foreach (array_slice($requests, 0, 5) as $r) {
+                $statusEmoji = match ($r['status']) {
+                    'new' => '🟡 Нова',
+                    'in_progress' => '🔵 В роботі',
+                    'done' => '🟢 Виконано',
+                    default => '⚪ ' . $r['status']
+                };
+                $text .= "• <b>№{$r['id']}: {$r['title']}</b> ({$statusEmoji})\n"
+                       . "  <i>" . htmlspecialchars(mb_substr($r['description'], 0, 80)) . "</i>\n"
+                       . "  📅 <code>" . substr($r['created_at'], 0, 10) . "</code>\n\n";
+            }
+            $text .= "👇 <b>Щоб подати нову заявку, натисніть кнопку нижче:</b>";
         }
 
-        $text = "🛠 <b>Ваші заявки:</b>\n\n";
-        foreach (array_slice($requests, 0, 5) as $r) {
-            $statusEmoji = match ($r['status']) {
-                'new' => '🟡 Нова',
-                'in_progress' => '🔵 В роботі',
-                'done' => '🟢 Виконано',
-                default => '⚪ ' . $r['status']
-            };
-            $text .= "• <b>{$r['title']}</b> ({$statusEmoji})\n"
-                   . "  <i>" . htmlspecialchars(mb_substr($r['description'], 0, 60)) . "...</i>\n\n";
-        }
-
-        TelegramService::sendMessage($chatId, $text);
+        TelegramService::sendMessage($chatId, $text, Keyboard::requestsMenu($webappUrl));
     }
 
     private function sendNewsList(int|string $chatId): void {
@@ -374,6 +443,50 @@ class BotHandler {
         $data = $callbackQuery['data'] ?? '';
         $queryId = (string)($callbackQuery['id'] ?? '');
 
+        // 1. Створення нової заявки
+        if ($data === 'new_request') {
+            TelegramService::answerCallbackQuery($queryId);
+            $msg = "🛠 <b>Оберіть категорію несправності:</b>\n\n"
+                 . "Оберіть зі списку нижче, що саме потребує ремонту або уваги майстра:";
+            TelegramService::sendMessage($chatId, $msg, Keyboard::requestCategories());
+            return;
+        }
+
+        // 2. Вибір категорії заявки
+        if (str_starts_with($data, 'cat_')) {
+            TelegramService::answerCallbackQuery($queryId);
+            $catCode = str_replace('cat_', '', $data);
+
+            if ($catCode === 'cancel') {
+                self::clearUserState($chatId);
+                $webappUrl = "{$this->webappBaseUrl}?chat_id={$chatId}";
+                TelegramService::sendMessage($chatId, "❌ Створення заявки скасовано.", Keyboard::mainMenu($webappUrl));
+                return;
+            }
+
+            $catMap = [
+                'plumbing' => '🚰 Сантехніка / Водопостачання',
+                'electric' => '⚡️ Електрика / Освітлення',
+                'elevator' => '🛗 Робота ліфта',
+                'intercom' => '🚪 Домофон / Двері / Замок',
+                'cleaning' => '🧹 Двір / Під\'їзд',
+                'other'    => '❓ Інше питання'
+            ];
+
+            $catTitle = $catMap[$catCode] ?? 'Інше';
+            self::setUserState($chatId, 'waiting_request_text', [
+                'category' => $catCode,
+                'category_title' => $catTitle
+            ]);
+
+            $prompt = "✍️ <b>Категорія: {$catTitle}</b>\n\n"
+                    . "Будь ласка, <b>напишіть повідомленням</b> деталі проблеми (що сталося, де саме несправність, коли зручно прийняти майстра):\n\n"
+                    . "<i>Для скасування надішліть /cancel</i>";
+            TelegramService::sendMessage($chatId, $prompt);
+            return;
+        }
+
+        // 3. Меню групи: правила будинку
         if ($data === 'group_rules') {
             TelegramService::answerCallbackQuery($queryId, "📜 Правила будинку");
             $rules = "📜 <b>Правила будинкового чату ОСББ «Перемоги 16»:</b>\n\n"
@@ -385,6 +498,7 @@ class BotHandler {
             return;
         }
 
+        // 4. Меню групи: контакти
         if ($data === 'group_contacts') {
             TelegramService::answerCallbackQuery($queryId, "☎️ Контакти служб");
             $contacts = "☎️ <b>Контакти ОСББ «Перемоги 16»:</b>\n\n"
@@ -397,13 +511,59 @@ class BotHandler {
             return;
         }
 
+        // 5. Внесення показника лічильника
         if (str_starts_with($data, 'meter_')) {
             TelegramService::answerCallbackQuery($queryId);
             $meterId = (int)str_replace('meter_', '', $data);
+            self::setUserState($chatId, 'waiting_meter_reading', [
+                'meter_id' => $meterId
+            ]);
             TelegramService::sendMessage(
                 $chatId,
-                "📝 <b>Внесення показника:</b>\nНадішліть новий показник у відповідь наступним повідомленням у форматі:\n<code>{$meterId} ВАШ_ПОКАЗНИК</code>\n(наприклад: <code>{$meterId} 135.5</code>)"
+                "📝 <b>Внесення показника:</b>\n\n"
+                . "Надішліть у відповідь просто <b>число</b> (наприклад: <code>135.5</code>):\n\n"
+                . "<i>Для скасування надішліть /cancel</i>"
             );
         }
+    }
+
+    // ============================================================
+    // Управління станом покрокових діалогів користувача в БД
+    // ============================================================
+
+    private static function getUserState(int|string $chatId): ?array {
+        try {
+            $pdo = Database::getConnection();
+            $stmt = $pdo->prepare('SELECT state, data FROM bot_states WHERE chat_id = ?');
+            $stmt->execute([(string)$chatId]);
+            $row = $stmt->fetch();
+            if ($row) {
+                return [
+                    'state' => $row['state'],
+                    'data' => json_decode($row['data'] ?? '{}', true) ?: []
+                ];
+            }
+        } catch (\Throwable $e) {}
+        return null;
+    }
+
+    private static function setUserState(int|string $chatId, string $state, array $data = []): void {
+        try {
+            $pdo = Database::getConnection();
+            $stmt = $pdo->prepare('
+                INSERT INTO bot_states (chat_id, state, data, updated_at)
+                VALUES (?, ?, ?, NOW())
+                ON DUPLICATE KEY UPDATE state = VALUES(state), data = VALUES(data), updated_at = NOW()
+            ');
+            $stmt->execute([(string)$chatId, $state, json_encode($data, JSON_UNESCAPED_UNICODE)]);
+        } catch (\Throwable $e) {}
+    }
+
+    private static function clearUserState(int|string $chatId): void {
+        try {
+            $pdo = Database::getConnection();
+            $stmt = $pdo->prepare('DELETE FROM bot_states WHERE chat_id = ?');
+            $stmt->execute([(string)$chatId]);
+        } catch (\Throwable $e) {}
     }
 }

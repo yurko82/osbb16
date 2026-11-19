@@ -260,4 +260,12 @@ CREATE TABLE IF NOT EXISTS `expenses` (
     CONSTRAINT `fk_exp_user` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- 18. Сесії станів Telegram-бота для покрокових діалогів
+CREATE TABLE IF NOT EXISTS `bot_states` (
+    `chat_id` VARCHAR(50) PRIMARY KEY,
+    `state` VARCHAR(50) NOT NULL,
+    `data` TEXT NULL,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 SET FOREIGN_KEY_CHECKS = 1;

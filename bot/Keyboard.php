@@ -10,7 +10,7 @@ class Keyboard {
     public static function mainMenu(string $webappUrl = ''): array {
         $keyboard = [
             [['text' => '💰 Мій рахунок та QR'], ['text' => '🚰 Подати показники']],
-            [['text' => '🛠 Мої заявки'], ['text' => '📢 Новини будинку']],
+            [['text' => '🛠 Залишити заявку'], ['text' => '📢 Новини будинку']],
         ];
 
         if (!empty($webappUrl)) {
@@ -23,6 +23,50 @@ class Keyboard {
             'keyboard' => $keyboard,
             'resize_keyboard' => true,
             'persistent' => true
+        ];
+    }
+
+    /**
+     * Меню керування заявками (створити + відкрити WebApp)
+     */
+    public static function requestsMenu(string $webappUrl = ''): array {
+        $buttons = [
+            [['text' => '➕ Написати нову заявку', 'callback_data' => 'new_request']]
+        ];
+
+        if (!empty($webappUrl)) {
+            $buttons[] = [
+                ['text' => '📱 Створити через WebApp', 'web_app' => ['url' => $webappUrl . '/requests']]
+            ];
+        }
+
+        return [
+            'inline_keyboard' => $buttons
+        ];
+    }
+
+    /**
+     * Вибір категорії заявки
+     */
+    public static function requestCategories(): array {
+        return [
+            'inline_keyboard' => [
+                [
+                    ['text' => '🚰 Сантехніка', 'callback_data' => 'cat_plumbing'],
+                    ['text' => '⚡️ Електрика', 'callback_data' => 'cat_electric']
+                ],
+                [
+                    ['text' => '🛗 Ліфт', 'callback_data' => 'cat_elevator'],
+                    ['text' => '🚪 Домофон / Двері', 'callback_data' => 'cat_intercom']
+                ],
+                [
+                    ['text' => '🧹 Двір / Під\'їзд', 'callback_data' => 'cat_cleaning'],
+                    ['text' => '❓ Інше питання', 'callback_data' => 'cat_other']
+                ],
+                [
+                    ['text' => '❌ Скасувати', 'callback_data' => 'cat_cancel']
+                ]
+            ]
         ];
     }
 
