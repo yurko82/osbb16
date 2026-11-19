@@ -56,4 +56,48 @@ class Keyboard {
             'inline_keyboard' => $buttons
         ];
     }
+
+    /**
+     * Кнопка для переходу в кабінет з групи
+     */
+    public static function groupCabinetLink(string $botUsername, string $portalUrl = ''): array {
+        $rows = [
+            [['text' => '📱 Мій особистий кабінет', 'url' => "https://t.me/{$botUsername}?start=cabinet"]]
+        ];
+        if (!empty($portalUrl)) {
+            $rows[] = [['text' => '🌐 Веб-портал будинку', 'url' => $portalUrl]];
+        }
+        return [
+            'inline_keyboard' => $rows
+        ];
+    }
+
+    /**
+     * Привітальне повідомлення для нових учасників групи
+     */
+    public static function groupWelcomeKeyboard(string $botUsername): array {
+        return [
+            'inline_keyboard' => [
+                [['text' => '📲 Підключити мою квартиру', 'url' => "https://t.me/{$botUsername}?start=join"]],
+                [['text' => '📜 Правила будинкового чату', 'callback_data' => 'group_rules']]
+            ]
+        ];
+    }
+
+    /**
+     * Закріплене головне меню в групі
+     */
+    public static function groupPinnedKeyboard(string $botUsername, string $portalUrl): array {
+        return [
+            'inline_keyboard' => [
+                [['text' => '📱 Відкрити кабінет у боті', 'url' => "https://t.me/{$botUsername}?start=cabinet"]],
+                [['text' => '🛠 Виклик майстра / Заявка', 'url' => "https://t.me/{$botUsername}?start=request"]],
+                [
+                    ['text' => '☎️ Аварійні контакти', 'callback_data' => 'group_contacts'],
+                    ['text' => '📜 Правила чату', 'callback_data' => 'group_rules']
+                ],
+                [['text' => '🌐 Веб-сайт ОСББ', 'url' => $portalUrl]]
+            ]
+        ];
+    }
 }

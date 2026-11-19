@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS `buildings` (
     `edrpou` VARCHAR(10) NOT NULL,
     `iban` VARCHAR(34) NOT NULL,
     `bank_name` VARCHAR(100) NOT NULL,
+    `telegram_chat_id` VARCHAR(50) NULL,
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

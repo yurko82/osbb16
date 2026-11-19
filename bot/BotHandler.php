@@ -33,6 +33,128 @@ class BotHandler {
     }
 
     private function handleMessage(array $message): void {
+        $chatType = $message['chat']['type'] ?? 'private';
+        if ($chatType === 'group' || $chatType === 'supergroup') {
+            $this->handleGroupMessage($message);
+            return;
+        }
+
+        $this->handlePrivateMessage($message);
+    }
+
+    /**
+     * Обробка повідомлень у груповому чаті ОСББ
+     */
+    private function handleGroupMessage(array $message): void {
+        $chatId = $message['chat']['id'];
+        $groupTitle = $message['chat']['title'] ?? 'ОСББ «Перемоги 16»';
+        $from = $message['from'] ?? [];
+        $senderName = $from['first_name'] ?? 'Сусід';
+        $text = trim($message['text'] ?? '');
+        $botUsername = $this->config['telegram']['bot_username'] ?? 'OSBB_peremogi_16_bot';
+        $portalUrl = rtrim($this->config['app']['url'] ?? '', '/');
+
+        // Зберігаємо ID групи для майбутніх розсилок новин з адмінки
+        self::saveGroupChatId($chatId);
+
+        // 1. Привітання нових учасників будинкового чату
+        if (!empty($message['new_chat_members'])) {
+            foreach ($message['new_chat_members'] as $newMember) {
+                if (!empty($newMember['is_bot'])) {
+                    continue;
+                }
+                $name = htmlspecialchars($newMember['first_name'] ?? 'новий сусіде');
+                $welcome = "👋 <b>Вітаємо, {$name}, у чаті співвласників {$groupTitle}!</b>\n\n"
+                         . "Щоб передавати показники лічильників, переглядати квитанції, голосувати в опитуваннях та звертатися до майстра, підключіть ваш особистий кабінет:";
+                TelegramService::sendMessage($chatId, $welcome, Keyboard::groupWelcomeKeyboard($botUsername));
+            }
+            return;
+        }
+
+        if (empty($text)) {
+            return;
+        }
+
+        // Нормалізація команди: "/cabinet@bot" -> "/cabinet"
+        $cmd = explode(' ', $text, 2)[0];
+        $cmd = strtolower(explode('@', $cmd)[0]);
+
+        switch ($cmd) {
+            case '/cabinet':
+            case '/start':
+            case '/app':
+                $reply = "👋 <b>" . htmlspecialchars($senderName) . "</b>, ваш особистий кабінет мешканця доступний у приватному чаті з ботом або на сайті:";
+                TelegramService::sendMessage($chatId, $reply, Keyboard::groupCabinetLink($botUsername, $portalUrl));
+                break;
+
+            case '/contacts':
+                $contacts = "☎️ <b>Контакти та аварійні служби ОСББ «Перемоги 16»:</b>\n\n"
+                          . "🏢 <b>Голова правління:</b> +38 (050) 111-22-33 (Сергій Васильович)\n"
+                          . "💼 <b>Бухгалтерія:</b> +38 (050) 222-33-44 (Тетяна Петрівна)\n"
+                          . "🔧 <b>Черговий майстер / сантехнік:</b> +38 (050) 333-44-55 (Богдан)\n"
+                          . "⚡️ <b>Аварійна служба (електрика/вода):</b> 15-57\n"
+                          . "🛗 <b>Диспетчер ліфтів:</b> +38 (044) 222-33-44\n"
+                          . "🚒 <b>ДСНС:</b> 101 | <b>Поліція:</b> 102 | <b>Швидка:</b> 103\n\n"
+                          . "🌐 <i>Офіційний веб-портал: {$portalUrl}</i>";
+                TelegramService::sendMessage($chatId, $contacts, Keyboard::groupCabinetLink($botUsername, $portalUrl));
+                break;
+
+            case '/rules':
+                $rules = "📜 <b>Правила будинкового чату ОСББ «Перемоги 16»:</b>\n\n"
+                       . "1️⃣ <b>Тиша та ремонти:</b> галасливі будівельні роботи дозволені у будні дні з 9:00 до 19:00. У вихідні та свята — <b>заборонені</b>.\n"
+                       . "2️⃣ <b>Сходові клітини:</b> не захаращуйте місця загального користування будматеріалами та сміттям.\n"
+                       . "3️⃣ <b>Паркування:</b> не блокуйте під'їзди для швидкої, ДСНС та спецтехніки.\n"
+                       . "4️⃣ <b>Етика:</b> повага один до одного, без спаму та сторонньої реклами.\n\n"
+                       . "💡 <i>Заявки на ремонт подавайте черговому майстру через /cabinet.</i>";
+                TelegramService::sendMessage($chatId, $rules, Keyboard::groupCabinetLink($botUsername, $portalUrl));
+                break;
+
+            case '/pin_menu':
+            case '/menu':
+                $menuText = "📌 <b>Офіційний навігатор ОСББ «Перемоги 16»</b>\n\n"
+                          . "Шановні співвласники! Для вас цілодобово працюють сервіси будинку:\n\n"
+                          . "• <b>Особистий кабінет:</b> баланс, квитанції з QR-кодом для Monobank/Приват24\n"
+                          . "• <b>Лічильники:</b> внесення щомісячних показників води, тепла та світла\n"
+                          . "• <b>Диспетчерська:</b> прямий виклик чергового майстра та техніка\n"
+                          . "• <b>Опитування:</b> офіційне голосування мешканців за ініціативи ОСББ\n\n"
+                          . "Оберіть потрібний розділ кнопками нижче:";
+                $sent = TelegramService::sendMessage($chatId, $menuText, Keyboard::groupPinnedKeyboard($botUsername, $portalUrl));
+                if (!empty($sent['message_id'])) {
+                    TelegramService::pinChatMessage($chatId, (int)$sent['message_id'], true);
+                }
+                break;
+
+            case '/bills':
+            case '/balance':
+            case '/qr':
+                $reply = "🔒 <b>Конфіденційність:</b> стан рахунку та квитанції є приватною інформацією вашої квартири.\n\n"
+                       . "Будь ласка, натисніть кнопку нижче, щоб відкрити ваш рахунок у приватному чаті з ботом:";
+                TelegramService::sendMessage($chatId, $reply, Keyboard::groupCabinetLink($botUsername, $portalUrl));
+                break;
+
+            case '/help':
+                $help = "ℹ️ <b>Команди бота в групі ОСББ:</b>\n\n"
+                      . "📱 /cabinet — перейти в особистий кабінет мешканця\n"
+                      . "☎️ /contacts — контакти правління та аварійних служб\n"
+                      . "📜 /rules — правила будинку та чату\n"
+                      . "📌 /pin_menu — закріпити навігаційне меню (для адмінів)\n\n"
+                      . "💡 <i>Усі персональні операції (квитанції, лічильники, заявки) здійснюються у приватному чаті з ботом.</i>";
+                TelegramService::sendMessage($chatId, $help, Keyboard::groupCabinetLink($botUsername, $portalUrl));
+                break;
+        }
+    }
+
+    private static function saveGroupChatId(int|string $chatId): void {
+        try {
+            $pdo = Database::getConnection();
+            $stmt = $pdo->prepare('UPDATE buildings SET telegram_chat_id = ? WHERE id = 1');
+            $stmt->execute([(string)$chatId]);
+        } catch (\Throwable $e) {
+            // ігноруємо помилки фонового збереження
+        }
+    }
+
+    private function handlePrivateMessage(array $message): void {
         $chatId = $message['chat']['id'];
         $text = trim($message['text'] ?? '');
         $username = $message['from']['username'] ?? null;
@@ -249,8 +371,33 @@ class BotHandler {
     private function handleCallbackQuery(array $callbackQuery): void {
         $chatId = $callbackQuery['message']['chat']['id'];
         $data = $callbackQuery['data'] ?? '';
+        $queryId = (string)($callbackQuery['id'] ?? '');
+
+        if ($data === 'group_rules') {
+            TelegramService::answerCallbackQuery($queryId, "📜 Правила будинку");
+            $rules = "📜 <b>Правила будинкового чату ОСББ «Перемоги 16»:</b>\n\n"
+                   . "1️⃣ <b>Тиша та ремонти:</b> галасливі роботи дозволені у будні дні з 9:00 до 19:00. У вихідні та свята — <b>заборонені</b>.\n"
+                   . "2️⃣ <b>Місця загального користування:</b> не захаращуйте сходові клітини сміттям та меблями.\n"
+                   . "3️⃣ <b>Паркування:</b> не блокуйте під'їзди для швидкої та сміттєвоза.\n"
+                   . "4️⃣ <b>Етика:</b> повага один до одного, без спаму та комерційної реклами.";
+            TelegramService::sendMessage($chatId, $rules);
+            return;
+        }
+
+        if ($data === 'group_contacts') {
+            TelegramService::answerCallbackQuery($queryId, "☎️ Контакти служб");
+            $contacts = "☎️ <b>Контакти ОСББ «Перемоги 16»:</b>\n\n"
+                      . "🏢 <b>Голова правління:</b> +38 (050) 111-22-33\n"
+                      . "💼 <b>Бухгалтерія:</b> +38 (050) 222-33-44\n"
+                      . "🔧 <b>Черговий майстер:</b> +38 (050) 333-44-55\n"
+                      . "⚡️ <b>Аварійна міська:</b> 15-57\n"
+                      . "🛗 <b>Диспетчер ліфтів:</b> +38 (044) 222-33-44";
+            TelegramService::sendMessage($chatId, $contacts);
+            return;
+        }
 
         if (str_starts_with($data, 'meter_')) {
+            TelegramService::answerCallbackQuery($queryId);
             $meterId = (int)str_replace('meter_', '', $data);
             TelegramService::sendMessage(
                 $chatId,

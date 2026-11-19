@@ -65,6 +65,32 @@ class TelegramService {
         return self::apiCall('sendMessage', $params);
     }
 
+    public static function pinChatMessage(int|string $chatId, int $messageId, bool $disableNotification = false): bool {
+        $res = self::apiCall('pinChatMessage', [
+            'chat_id' => $chatId,
+            'message_id' => $messageId,
+            'disable_notification' => $disableNotification,
+        ]);
+        return (bool)$res;
+    }
+
+    public static function deleteMessage(int|string $chatId, int $messageId): bool {
+        $res = self::apiCall('deleteMessage', [
+            'chat_id' => $chatId,
+            'message_id' => $messageId,
+        ]);
+        return (bool)$res;
+    }
+
+    public static function answerCallbackQuery(string $callbackQueryId, string $text = '', bool $showAlert = false): bool {
+        $res = self::apiCall('answerCallbackQuery', [
+            'callback_query_id' => $callbackQueryId,
+            'text' => $text,
+            'show_alert' => $showAlert,
+        ]);
+        return (bool)$res;
+    }
+
     /**
      * Створює одноразовий deep-link токен для підключення акаунта
      */
@@ -96,12 +122,10 @@ class TelegramService {
     }
 
     /**
-     * Розсилка важливого оголошення всім підключеним мешканцям
+     * Розсилка важливого оголошення в групу будинку та всім підключеним мешканцям
      */
     public static function broadcastNews(string $title, string $body, string $type = 'info'): int {
         $pdo = Database::getConnection();
-        $stmt = $pdo->query('SELECT telegram_chat_id FROM users WHERE telegram_chat_id IS NOT NULL AND is_active = 1');
-        $users = $stmt->fetchAll();
 
         $emoji = match ($type) {
             'emergency' => '🚨 <b>ТЕРМІНОВО!</b>',
@@ -112,6 +136,25 @@ class TelegramService {
         $text = "{$emoji}\n\n<b>" . htmlspecialchars($title) . "</b>\n\n" . htmlspecialchars($body);
 
         $sent = 0;
+
+        // 1. Надсилаємо в офіційну групу будинку (якщо бот доданий у групу)
+        $stmtB = $pdo->query('SELECT telegram_chat_id FROM buildings WHERE id = 1');
+        $groupChatId = $stmtB->fetchColumn();
+        if (!empty($groupChatId)) {
+            $config = require dirname(__DIR__, 2) . '/config/config.php';
+            $botUsername = $config['telegram']['bot_username'] ?? 'OSBB_peremogi_16_bot';
+            $portalUrl = rtrim($config['app']['url'] ?? '', '/');
+            $groupMsg = self::sendMessage($groupChatId, $text, \App\Bot\Keyboard::groupCabinetLink($botUsername, $portalUrl));
+            if ($groupMsg && $type === 'emergency' && !empty($groupMsg['message_id'])) {
+                self::pinChatMessage($groupChatId, (int)$groupMsg['message_id']);
+            }
+            $sent++;
+        }
+
+        // 2. Персональна розсилка всім підключеним мешканцям
+        $stmt = $pdo->query('SELECT telegram_chat_id FROM users WHERE telegram_chat_id IS NOT NULL AND is_active = 1');
+        $users = $stmt->fetchAll();
+
         foreach ($users as $u) {
             if (!empty($u['telegram_chat_id'])) {
                 self::sendMessage($u['telegram_chat_id'], $text);
