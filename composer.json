@@ -1,0 +1,14 @@
+{
+    "name": "osbb/portal",
+    "description": "Система комплексного управління ОСББ на PHP, MySQL та Telegram Bot",
+    "type": "project",
+    "license": "proprietary",
+    "require": {
+        "php": ">=8.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    }
+}
