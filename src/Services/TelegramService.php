@@ -82,7 +82,16 @@ class TelegramService {
     public static function getBotDeepLink(int $userId): string {
         $config = require dirname(__DIR__, 2) . '/config/config.php';
         $botUsername = $config['telegram']['bot_username'] ?? 'MyDomOsbbBot';
-        $token = self::generateLinkToken($userId);
+
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare('SELECT telegram_token FROM users WHERE id = ?');
+        $stmt->execute([$userId]);
+        $token = $stmt->fetchColumn();
+
+        if (empty($token)) {
+            $token = self::generateLinkToken($userId);
+        }
+
         return "https://t.me/{$botUsername}?start={$token}";
     }
 

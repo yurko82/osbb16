@@ -45,6 +45,7 @@ class BotHandler {
             $parts = explode(' ', $text, 2);
             $token = trim($parts[1] ?? '');
 
+            // Якщо токен передано — пробуємо прив'язати
             if (!empty($token)) {
                 $linkedUser = User::linkTelegram($token, $chatId, $username);
                 if ($linkedUser) {
@@ -56,18 +57,26 @@ class BotHandler {
                     $webappUrl = "{$this->webappBaseUrl}?chat_id={$chatId}";
                     TelegramService::sendMessage($chatId, $reply, Keyboard::mainMenu($webappUrl));
                     return;
-                } else {
-                    TelegramService::sendMessage($chatId, "⚠️ <b>Помилка прив'язки:</b> недійсний або застарілий токен. Будь ласка, згенеруйте нове посилання в особистому кабінеті.");
-                    return;
                 }
             }
 
+            // Якщо користувач уже прив'язаний (або повторний /start)
             if ($user) {
                 $webappUrl = "{$this->webappBaseUrl}?chat_id={$chatId}";
                 TelegramService::sendMessage(
                     $chatId,
-                    "👋 <b>З поверненням, {$user['full_name']}!</b>\nКвартира №{$user['apartment_number']}.\nОберіть дію в меню нижче:",
+                    "👋 <b>З поверненням, {$user['full_name']}!</b>\nКвартира №" . ($user['apartment_number'] ?? 'не призначено') . ".\nОберіть дію в меню нижче:",
                     Keyboard::mainMenu($webappUrl)
+                );
+                return;
+            }
+
+            // Якщо не прив'язаний і токен не підійшов
+            if (!empty($token)) {
+                TelegramService::sendMessage(
+                    $chatId,
+                    "⚠️ <b>Помилка прив'язки:</b> недійсний токен <code>" . htmlspecialchars($token) . "</code>.\n\n"
+                    . "Будь ласка, увійдіть в особистий кабінет на сайті ОСББ у розділ <b>«Telegram»</b> та скористайтесь актуальним посиланням."
                 );
             } else {
                 TelegramService::sendMessage(
