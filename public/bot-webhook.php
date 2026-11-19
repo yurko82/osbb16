@@ -31,10 +31,16 @@ if (empty($rawInput)) {
     exit;
 }
 
-$update = json_decode($rawInput, true);
-if (is_array($update)) {
-    $handler = new BotHandler();
-    $handler->handleUpdate($update);
+try {
+    $update = json_decode($rawInput, true);
+    if (is_array($update)) {
+        $handler = new BotHandler();
+        $handler->handleUpdate($update);
+    }
+} catch (\Throwable $e) {
+    // Фіксуємо помилку в лог, але завжди відповідаємо 200 OK для Telegram
+    error_log("[TelegramWebhook Error] " . $e->getMessage() . " in " . $e->getFile() . ":" . $e->getLine());
 }
 
+http_response_code(200);
 echo json_encode(['ok' => true]);

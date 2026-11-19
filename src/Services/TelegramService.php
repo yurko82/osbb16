@@ -25,7 +25,7 @@ class TelegramService {
     /**
      * Відправка запиту до Telegram Bot API
      */
-    public static function apiCall(string $method, array $params = []): ?array {
+    public static function apiCall(string $method, array $params = []): mixed {
         if (!self::isConfigured()) {
             return null;
         }
@@ -45,9 +45,11 @@ class TelegramService {
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
 
-        if ($response && $httpCode === 200) {
+        if ($response && ($httpCode === 200 || $httpCode === 201)) {
             $data = json_decode($response, true);
-            return $data['ok'] ? $data['result'] : null;
+            if (is_array($data) && !empty($data['ok'])) {
+                return $data['result'] ?? true;
+            }
         }
 
         return null;
@@ -62,7 +64,8 @@ class TelegramService {
         if ($replyMarkup) {
             $params['reply_markup'] = $replyMarkup;
         }
-        return self::apiCall('sendMessage', $params);
+        $res = self::apiCall('sendMessage', $params);
+        return is_array($res) ? $res : null;
     }
 
     public static function pinChatMessage(int|string $chatId, int $messageId, bool $disableNotification = false): bool {
@@ -71,7 +74,7 @@ class TelegramService {
             'message_id' => $messageId,
             'disable_notification' => $disableNotification,
         ]);
-        return (bool)$res;
+        return $res === true || is_array($res);
     }
 
     public static function deleteMessage(int|string $chatId, int $messageId): bool {
@@ -79,7 +82,7 @@ class TelegramService {
             'chat_id' => $chatId,
             'message_id' => $messageId,
         ]);
-        return (bool)$res;
+        return $res === true || is_array($res);
     }
 
     public static function answerCallbackQuery(string $callbackQueryId, string $text = '', bool $showAlert = false): bool {
@@ -88,7 +91,7 @@ class TelegramService {
             'text' => $text,
             'show_alert' => $showAlert,
         ]);
-        return (bool)$res;
+        return $res === true || is_array($res);
     }
 
     /**

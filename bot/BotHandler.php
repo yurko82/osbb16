@@ -71,7 +71,8 @@ class BotHandler {
             return;
         }
 
-        if (empty($text)) {
+        // Ігноруємо службові повідомлення Telegram (закріплення, зміна фото тощо)
+        if (isset($message['pinned_message']) || empty($text)) {
             return;
         }
 
